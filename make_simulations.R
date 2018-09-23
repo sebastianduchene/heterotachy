@@ -41,10 +41,10 @@ for(nevent in n_events){
             part2_250 <- as.DNAbin(simSeq(tr), l = 250)
             aln_1000 <- cbind(part1_500, part2_500)
             aln_500 <- cbind(part1_250, part2_250)
-            write.dna(aln_1000, file = paste0('simulations/ntax', ntax, '_event_1000nt_', nevent,
+            write.dna(aln_1000, file = paste0('simulations/1000nt_ntax', ntax, '_event_', nevent,
                       '_hetero_sim', i, '.fasta'), format = 'fasta',
                       nbcol = -1, colsep = '')
-            write.dna(aln_500, file = paste0('simulations/ntax', ntax, '_event_500nt_', nevent,
+            write.dna(aln_500, file = paste0('simulations/500nt_ntax', ntax, '_event_', nevent,
                       '_hetero_sim', i, '.fasta'), format = 'fasta',
                       nbcol = -1, colsep = '')
         }
