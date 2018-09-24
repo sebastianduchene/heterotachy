@@ -18,7 +18,10 @@ for(nevent in n_events){
             attempts <- 0
             repeat{
                 if(length(sampled_nodes) >= n) break
-                sampled <- sample(length(tr$tip.label)+(1:(length(tr$tip.label)-1)), 1)
+                internal_nodes <- unique(tr$edge[, 1])
+                root <- tr$edge[!tr$edge[, 1] %in% tr$edge[, 2], 1][1]
+                internal_nodes <- internal_nodes[!internal_nodes %in% root]
+                sampled <- sample(internal_nodes, 1)
                 descendants <- get.descending.nodes.branches(tr, sampled)$descending.nodes
                 if(!any(descendants %in% nodes_nested)){
                     nodes_nested <- c(nodes_nested, descendants, sampled)
@@ -26,15 +29,17 @@ for(nevent in n_events){
                 }else{
                     attempts <- attempts + 1
                 }
-                if(attempts > 10) break
+                if(attempts > 20) break
             }
             write.tree(tr, file = paste0('simulations/ntax', ntax, '_event', nevent,
                                          '_true_tree_sim', i, '.tree'))
             part1_500 <- as.DNAbin(simSeq(tr), l = 500)
             part1_250 <- as.DNAbin(simSeq(tr), l = 250)
             if(nevent > 0){
-            tr$edge.length[tr$edge[, 2] %in% sampled_nodes] <- tr$edge.length[tr$edge[, 2] %in% sampled_nodes] * 10
-            write.tree(tr, file = paste0('simulations/ntax', ntax, '_event', nevent,
+                tr$edge.length[tr$edge[, 2] %in% sampled_nodes] <- tr$edge.length[tr$edge[, 2] %in% sampled_nodes] * 10
+                tr$node.label <- rep('original', tr$Nnode)
+                tr$node.label[tr$edge[tr$edge[, 2] %in% sampled_nodes, 2]-length(tr$tip.label)] <- 'heterotachy'
+                write.tree(tr, file = paste0('simulations/ntax', ntax, '_event', nevent,
                                          '_hetero_tree_sim', i, '.tree'))
             }
             part2_500 <- as.DNAbin(simSeq(tr), l = 500)
@@ -42,11 +47,10 @@ for(nevent in n_events){
             aln_1000 <- cbind(part1_500, part2_500)
             aln_500 <- cbind(part1_250, part2_250)
             write.dna(aln_1000, file = paste0('simulations/1000nt_ntax', ntax, '_event_', nevent,
-                      '_hetero_sim', i, '.fasta'), format = 'fasta',
-                      nbcol = -1, colsep = '')
+                      '_hetero_sim', i, '.fasta'), format = 'fasta', nbcol = -1, colsep = '')
             write.dna(aln_500, file = paste0('simulations/500nt_ntax', ntax, '_event_', nevent,
-                      '_hetero_sim', i, '.fasta'), format = 'fasta',
-                      nbcol = -1, colsep = '')
+                      '_hetero_sim', i, '.fasta'), format = 'fasta', nbcol = -1, colsep = '')
         }
     }
 }
+
