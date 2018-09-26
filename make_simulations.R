@@ -7,6 +7,16 @@ n_events <- c(0, 1, 2, 5)
 number_of_taxa <- c(10, 100)
 
 
+rec_bind <- function(lmat){
+    if(length(lmat) == 1) return(lmat[[1]])
+    if(length(lmat) == 2) return(cbind(lmat[[1]], lmat[[2]]))
+    if(length(lmat) > 2) return(cbind(lmat[[1]], rec_bind(lmat[-1])))
+    #lmat <- lapply(letters[1:5], function(x) matrix(x, 5, 5))
+}
+
+
+
+
 for(nevent in n_events){
     for(ntax in number_of_taxa){
         for(i in 1:10){
@@ -31,25 +41,30 @@ for(nevent in n_events){
                 }
                 if(attempts > 20) break
             }
-            write.tree(tr, file = paste0('simulations/ntax', ntax, '_event', nevent,
-                                         '_true_tree_sim', i, '.tree'))
-            part1_500 <- as.DNAbin(simSeq(tr), l = 500)
-            part1_250 <- as.DNAbin(simSeq(tr), l = 250)
+            write.tree(tr, file = paste0('simulations_gamma/ntax', ntax, '_event', nevent,
+                                         '_true_tree_sim', i, '_gamma.tree'))
+            gamma_rates <- phangorn:::discrete.gamma(0.1, 4)
+            part1_500 <- rec_bind(lapply(gamma_rates,
+                                         function(rate) as.DNAbin(simSeq(tr, l = 125, rate = rate))))
+            part1_250 <- rec_bind(lapply(gamma_rates,
+                                         function(rate) as.DNAbin(simSeq(tr, l = 62, rate = rate))))
             if(nevent > 0){
                 tr$edge.length[tr$edge[, 2] %in% sampled_nodes] <- tr$edge.length[tr$edge[, 2] %in% sampled_nodes] * 10
                 tr$node.label <- rep('original', tr$Nnode)
                 tr$node.label[tr$edge[tr$edge[, 2] %in% sampled_nodes, 2]-length(tr$tip.label)] <- 'heterotachy'
-                write.tree(tr, file = paste0('simulations/ntax', ntax, '_event', nevent,
-                                         '_hetero_tree_sim', i, '.tree'))
+                write.tree(tr, file = paste0('simulations_gamma/ntax', ntax, '_event', nevent,
+                                         '_hetero_tree_sim', i, '_gamma.tree'))
             }
-            part2_500 <- as.DNAbin(simSeq(tr), l = 500)
-            part2_250 <- as.DNAbin(simSeq(tr), l = 250)
+            part2_500 <- rec_bind(lapply(gamma_rates,
+                                         function(rate) as.DNAbin(simSeq(tr, l = 500, rate = rate))))
+            part2_250 <- rec_bind(lapply(gamma_rates,
+                                         function(rate) as.DNAbin(simSeq(tr, l = 250, rate = rate))))
             aln_1000 <- cbind(part1_500, part2_500)
             aln_500 <- cbind(part1_250, part2_250)
-            write.dna(aln_1000, file = paste0('simulations/1000nt_ntax', ntax, '_event_', nevent,
-                      '_hetero_sim', i, '.fasta'), format = 'fasta', nbcol = -1, colsep = '')
-            write.dna(aln_500, file = paste0('simulations/500nt_ntax', ntax, '_event_', nevent,
-                      '_hetero_sim', i, '.fasta'), format = 'fasta', nbcol = -1, colsep = '')
+            write.dna(aln_1000, file = paste0('simulations_gamma/1000nt_ntax', ntax, '_event_', nevent,
+                      '_hetero_sim', i, '_gamma.fasta'), format = 'fasta', nbcol = -1, colsep = '')
+            write.dna(aln_500, file = paste0('simulations_gamma/500nt_ntax', ntax, '_event_', nevent,
+                      '_hetero_sim', i, '_gamma.fasta'), format = 'fasta', nbcol = -1, colsep = '')
         }
     }
 }
