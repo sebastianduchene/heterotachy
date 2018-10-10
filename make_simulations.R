@@ -26,6 +26,7 @@ for(nevent in n_events){
             nodes_nested <- vector()
             sampled_nodes <- vector()
             attempts <- 0
+	    print(paste('Simulation', i, n))
             repeat{
                 if(length(sampled_nodes) >= n) break
                 internal_nodes <- unique(tr$edge[, 1])
@@ -47,7 +48,7 @@ for(nevent in n_events){
             part1_500 <- rec_bind(lapply(gamma_rates,
                                          function(rate) as.DNAbin(simSeq(tr, l = 125, rate = rate))))
             part1_250 <- rec_bind(lapply(gamma_rates,
-                                         function(rate) as.DNAbin(simSeq(tr, l = 62, rate = rate))))
+                                         function(rate) as.DNAbin(simSeq(tr, l = 63, rate = rate))))
             if(nevent > 0){
                 tr$edge.length[tr$edge[, 2] %in% sampled_nodes] <- tr$edge.length[tr$edge[, 2] %in% sampled_nodes] * 10
                 tr$node.label <- rep('original', tr$Nnode)
@@ -56,11 +57,13 @@ for(nevent in n_events){
                                          '_hetero_tree_sim', i, '_gamma.tree'))
             }
             part2_500 <- rec_bind(lapply(gamma_rates,
-                                         function(rate) as.DNAbin(simSeq(tr, l = 500, rate = rate))))
+                                         function(rate) as.DNAbin(simSeq(tr, l = 125, rate = rate))))
             part2_250 <- rec_bind(lapply(gamma_rates,
-                                         function(rate) as.DNAbin(simSeq(tr, l = 250, rate = rate))))
+                                         function(rate) as.DNAbin(simSeq(tr, l = 63, rate = rate))))
             aln_1000 <- cbind(part1_500, part2_500)
-            aln_500 <- cbind(part1_250, part2_250)
+	    aln_1000 <- aln_1000[, 1:1000]
+            aln_500 <- cbind(part1_250, part2_250)[, 1:500]
+	    aln_500 <- aln_500[, 1:500]
             write.dna(aln_1000, file = paste0('simulations_gamma/1000nt_ntax', ntax, '_event_', nevent,
                       '_hetero_sim', i, '_gamma.fasta'), format = 'fasta', nbcol = -1, colsep = '')
             write.dna(aln_500, file = paste0('simulations_gamma/500nt_ntax', ntax, '_event_', nevent,
